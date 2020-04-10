@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="bcpkix-jdk15on-165">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/SeguridadRSA/jre/bcpkix-jdk15on-165.jar!/" />
+      <root url="jar://$PROJECT_DIR$/SeguridadRSA/jre/bcprov-jdk15on-165.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

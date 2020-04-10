@@ -1,14 +1,11 @@
 package seguridadrsa;
 
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
+import java.security.*;
 
 public class FileShare {
 
@@ -18,6 +15,8 @@ public class FileShare {
     public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
         FileShare este = new FileShare();
         este.crearClaves();
+
+
     }
 
     public void crearClaves() throws NoSuchAlgorithmException, IOException {
@@ -37,5 +36,9 @@ public class FileShare {
         writer = new JcaPEMWriter(new FileWriter(new File("PublicKey.pem")));
         writer.writeObject(PubKey);
         writer.close();
+    }
+    public void descifrarArchivo(){
+
+
     }
 }
