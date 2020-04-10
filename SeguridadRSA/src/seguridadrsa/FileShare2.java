@@ -13,7 +13,7 @@ import java.security.spec.RSAPublicKeySpec;
 
 
 
-public class RSAEncryption {
+public class FileShare2 {
     private static final String Archivo_Llave_Publica=" PublicKey.pem";
     private static final String Archivo_Llave_Privada=" PrivateKey.pem";
 
@@ -33,13 +33,13 @@ public class RSAEncryption {
             RSAPublicKeySpec rsaPubKeySpec=keyFactory.getKeySpec(publicKey,RSAPublicKeySpec.class);
             RSAPrivateKeySpec rsaPrivKeySpec=keyFactory.getKeySpec(privateKey,RSAPrivateKeySpec.class);
 
-            RSAEncryption objetoRSA= new RSAEncryption();
+            FileShare2 objetoRSA= new FileShare2();
 
             objetoRSA.guardarLlavesPEM(Archivo_Llave_Publica, rsaPubKeySpec.getModulus(),rsaPubKeySpec.getPublicExponent());
             objetoRSA.guardarLlavesPEM(Archivo_Llave_Privada,rsaPrivKeySpec.getModulus(),rsaPrivKeySpec.getPrivateExponent());
 
 
-            byte[] datosEncriptados=objetoRSA.encryptData("ESTO ES LO QUE SE DESEA ENCRIPTAR, SIN EMBARGO DEBERIA SER UN ARCHIVO");
+            byte[] datosEncriptados=objetoRSA.cifrarArchivo("ESTO ES LO QUE SE DESEA ENCRIPTAR, SIN EMBARGO DEBERIA SER UN ARCHIVO");
             objetoRSA.descifrarArchivo(datosEncriptados);
 
 
@@ -78,7 +78,7 @@ public class RSAEncryption {
             }
         }
     }
-    public byte[] encryptData(String data) throws IOException{
+    public byte[] cifrarArchivo(String data) throws IOException{
 
 
         System.out.println("Datos a encriptar (Deberia ser archivo y no string) "+ data);
@@ -133,7 +133,7 @@ public class RSAEncryption {
         byte[] datosDescifrados= null;
 
         try{
-            PrivateKey privateKey = readPrivateKeyFromFile(this.Archivo_Llave_Privada);
+            PrivateKey privateKey = leerArchivoLlavePrivada(this.Archivo_Llave_Privada);
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
             datosDescifrados= cipher.doFinal(data);
@@ -147,7 +147,7 @@ public class RSAEncryption {
 
     }
 
-    public PrivateKey readPrivateKeyFromFile(String nombreArchivo) throws IOException{
+    public PrivateKey leerArchivoLlavePrivada(String nombreArchivo) throws IOException{
 
 
         FileInputStream fileInputStream=null;

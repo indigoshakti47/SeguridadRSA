@@ -7,7 +7,7 @@ import java.awt.event.ActionListener;
 public class UserInterface extends JFrame {
     private JTextField textField;
     private JTextArea textArea;
-    private RSAEncryption cifrado = new RSAEncryption();
+    private FileShare2 cifrado = new FileShare2();
 
     public UserInterface(){
         this.setSize(600,400);
