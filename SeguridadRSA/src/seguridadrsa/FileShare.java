@@ -242,7 +242,7 @@ public class FileShare extends javax.swing.JFrame {
 
     private void btn_ciphActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_ciphActionPerformed
         try {
-            this.cifrarArchivo(readFile);
+            this.cifrarArchivo(readFile, PubKey);
         } catch (IOException ex) {
             Logger.getLogger(FileShare.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -250,7 +250,7 @@ public class FileShare extends javax.swing.JFrame {
 
     private void btn_desciphActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_desciphActionPerformed
         try {
-            this.descifrarArchivo(readFile);
+            this.descifrarArchivo(readFile, PrivKey);
         } catch (IOException ex) {
             Logger.getLogger(FileShare.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -325,25 +325,6 @@ public class FileShare extends javax.swing.JFrame {
         }
     }
 
-    /*private PublicKey leerllaveprivada() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        FileInputStream in = new FileInputStream("mykey.pem.pub");
-        byte[] keyBytes = new byte[in.available()];
-        in.read(keyBytes);
-        in.close();
-
-        String pubKey = new String(keyBytes, "UTF-8");
-        pubKey = pubKey.replaceAll("(-+BEGIN PUBLIC KEY-+\\r?\\n|-+END PUBLIC KEY-+\\r?\\n?)", "");
-
-        BASE64Decoder decoder = new BASE64Decoder();
-        keyBytes = decoder.decodeBuffer(pubKey);
-
-        // generate public key
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        PublicKey publicKey = keyFactory.generatePublic(spec);
-
-        return publicKey;
-    }*/
     public Key leerllave(File file, String type) throws Exception {
         if (type.equals("public")) {
             FileInputStream in = new FileInputStream(file);
@@ -385,13 +366,13 @@ public class FileShare extends javax.swing.JFrame {
         }
     }
 
-    public void cifrarArchivo(File data) throws IOException {
-        if (PubKey != null && data!=null) {
+    public void cifrarArchivo(File data, PublicKey key) throws IOException {
+        if (key != null && data!=null) {
             byte[] datosACifrar = Files.readAllBytes(data.toPath());
             byte[] datosEncriptados = null;
             try {
                 Cipher cipher = Cipher.getInstance("RSA");
-                cipher.init(Cipher.ENCRYPT_MODE, PubKey);
+                cipher.init(Cipher.ENCRYPT_MODE, key);
                 datosEncriptados = cipher.doFinal(datosACifrar);
                 System.out.println("Los datos ya encriptados son:  " + datosEncriptados);
 
@@ -420,14 +401,14 @@ public class FileShare extends javax.swing.JFrame {
         }
     }
 
-    public void descifrarArchivo(File data) throws IOException {
-        if (PrivKey != null && data!=null) {
+    public void descifrarArchivo(File data, PrivateKey key) throws IOException {
+        if (key != null && data!=null) {
             byte[] datosADescifrar = Files.readAllBytes(data.toPath());
             byte[] datosDescifrados = null;
 
             try {
                 Cipher cipher = Cipher.getInstance("RSA");
-                cipher.init(Cipher.DECRYPT_MODE, PrivKey);
+                cipher.init(Cipher.DECRYPT_MODE, key);
                 datosDescifrados = cipher.doFinal(datosADescifrar);
                 System.out.println("Los datos descifrados son: " + new String(datosDescifrados));
 
