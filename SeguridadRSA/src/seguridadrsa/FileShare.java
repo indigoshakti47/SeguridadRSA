@@ -3,19 +3,22 @@ package seguridadrsa;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import sun.misc.IOUtils;
+import sun.misc.BASE64Decoder;
 
 public class FileShare extends javax.swing.JFrame {
 
@@ -29,12 +32,8 @@ public class FileShare extends javax.swing.JFrame {
     private void initComponents() {
 
         jButton1 = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
-        btn_genKeys = new javax.swing.JButton();
-        btn_savepubKeys = new javax.swing.JButton();
-        btn_saveprivKey = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
-        jButton2 = new javax.swing.JButton();
+        btn_readfile = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
         lbl_routefile = new javax.swing.JLabel();
         btn_ciph = new javax.swing.JButton();
@@ -45,70 +44,38 @@ public class FileShare extends javax.swing.JFrame {
         btn_loadPrivKey = new javax.swing.JButton();
         lbl_routeprivkey = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
+        btn_genKeys = new javax.swing.JButton();
+        lbl_loadedFile = new javax.swing.JLabel();
         btn_exit = new javax.swing.JButton();
 
         jButton1.setText("jButton1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-
-        btn_genKeys.setText("Generar Llaves");
-        btn_genKeys.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn_genKeysActionPerformed(evt);
-            }
-        });
-
-        btn_savepubKeys.setText("Guardar Llave Publica");
-        btn_savepubKeys.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn_savepubKeysActionPerformed(evt);
-            }
-        });
-
-        btn_saveprivKey.setText("Guardar Llave Privada");
-        btn_saveprivKey.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn_saveprivKeyActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(btn_saveprivKey, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
-                    .addComponent(btn_savepubKeys, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btn_genKeys, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(0, 20, Short.MAX_VALUE))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(btn_genKeys, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(btn_savepubKeys, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(btn_saveprivKey, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        jButton2.setText("Abrir Archivo");
+        btn_readfile.setText("Abrir Archivo");
+        btn_readfile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_readfileActionPerformed(evt);
+            }
+        });
 
         jLabel3.setText("Archivo Cargado:");
 
-        lbl_routefile.setText("jLabel4");
-
         btn_ciph.setText("Cifrar y Guardar");
+        btn_ciph.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_ciphActionPerformed(evt);
+            }
+        });
 
         btn_desciph.setText("Descifrar y Guardar");
+        btn_desciph.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_desciphActionPerformed(evt);
+            }
+        });
 
         btn_loadPubKey.setText("Cargar Llave Publica");
         btn_loadPubKey.addActionListener(new java.awt.event.ActionListener() {
@@ -132,22 +99,34 @@ public class FileShare extends javax.swing.JFrame {
 
         jLabel5.setText("Archivo Cargado:");
 
+        btn_genKeys.setText("Generar Llaves");
+        btn_genKeys.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_genKeysActionPerformed(evt);
+            }
+        });
+
+        lbl_loadedFile.setText("jLabel1");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(lbl_routefile)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btn_loadPubKey, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btn_genKeys, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btn_desciph, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btn_ciph, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btn_loadPubKey, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
-                    .addComponent(btn_loadPrivKey, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
+                    .addComponent(btn_loadPrivKey, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btn_readfile, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lbl_loadedFile)
                             .addComponent(jLabel3)
-                            .addComponent(lbl_routefile)
                             .addComponent(jLabel4)
                             .addComponent(lbl_routepubkey)
                             .addComponent(jLabel5)
@@ -158,29 +137,36 @@ public class FileShare extends javax.swing.JFrame {
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel3)
-                .addGap(18, 18, 18)
-                .addComponent(lbl_routefile)
-                .addGap(18, 18, 18)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(116, 116, 116)
+                        .addComponent(lbl_routefile))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(btn_genKeys, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(btn_readfile, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel3)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lbl_loadedFile)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
                 .addComponent(btn_loadPubKey, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel4)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lbl_routepubkey)
-                .addGap(18, 18, 18)
+                .addGap(30, 30, 30)
                 .addComponent(btn_loadPrivKey, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel5)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lbl_routeprivkey)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
+                .addGap(30, 30, 30)
                 .addComponent(btn_ciph, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(btn_desciph, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         btn_exit.setText("Cerrar");
@@ -194,98 +180,98 @@ public class FileShare extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
                 .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
             .addGroup(layout.createSequentialGroup()
-                .addGap(273, 273, 273)
+                .addGap(178, 178, 178)
                 .addComponent(btn_exit, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(165, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(btn_exit, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btn_exitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_exitActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_btn_exitActionPerformed
+
+    private void btn_loadPubKeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_loadPubKeyActionPerformed
+        try {
+            JFileChooser chooser = new JFileChooser();
+            chooser.showOpenDialog(this);
+            File file = chooser.getSelectedFile();
+            this.PubKey = (PublicKey) this.leerllave(file, "public");
+            this.lbl_routepubkey.setText(file.getName());
+        } catch (IOException ex) {
+            Logger.getLogger(FileShare.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(FileShare.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btn_loadPubKeyActionPerformed
+
+    private void btn_loadPrivKeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_loadPrivKeyActionPerformed
+        try {
+            JFileChooser chooser = new JFileChooser();
+            chooser.showOpenDialog(this);
+            File file = chooser.getSelectedFile();
+            this.PrivKey = (PrivateKey) this.leerllave(file, "private");
+            this.lbl_routeprivkey.setText(file.getName());
+        } catch (IOException ex) {
+            Logger.getLogger(FileShare.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(FileShare.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btn_loadPrivKeyActionPerformed
+
+    private void btn_readfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_readfileActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        chooser.showOpenDialog(this);
+        readFile = chooser.getSelectedFile();
+        this.lbl_loadedFile.setText(readFile.getName());
+    }//GEN-LAST:event_btn_readfileActionPerformed
+
+    private void btn_ciphActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_ciphActionPerformed
+        try {
+            this.cifrarArchivo(readFile);
+        } catch (IOException ex) {
+            Logger.getLogger(FileShare.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btn_ciphActionPerformed
+
+    private void btn_desciphActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_desciphActionPerformed
+        try {
+            this.descifrarArchivo(readFile);
+        } catch (IOException ex) {
+            Logger.getLogger(FileShare.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btn_desciphActionPerformed
+
     private void btn_genKeysActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_genKeysActionPerformed
         try {
-            // TODO add your handling code here:
             this.crearClaves();
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(FileShare.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(FileShare.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }//GEN-LAST:event_btn_genKeysActionPerformed
-
-    private void btn_savepubKeysActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_savepubKeysActionPerformed
-        // TODO add your handling code here:
-        this.GuardarLlavePublica();
-    }//GEN-LAST:event_btn_savepubKeysActionPerformed
-
-    private void btn_exitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_exitActionPerformed
-        // TODO add your handling code here:
-        System.exit(0);
-    }//GEN-LAST:event_btn_exitActionPerformed
-
-    private void btn_loadPubKeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_loadPubKeyActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btn_loadPubKeyActionPerformed
-
-    private void btn_loadPrivKeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_loadPrivKeyActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btn_loadPrivKeyActionPerformed
-
-    private void btn_saveprivKeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_saveprivKeyActionPerformed
-        // TODO add your handling code here:
-        this.GuardarLlavePrivada();
-    }//GEN-LAST:event_btn_saveprivKeyActionPerformed
 
     PrivateKey PrivKey;
     PublicKey PubKey;
-    PrivateKey PrivKeyread;
-    PublicKey PubKeyread;
+    File readFile;
 
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(FileShare.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(FileShare.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(FileShare.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(FileShare.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-        //</editor-fold>
-
-        /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new FileShare().setVisible(true);
@@ -293,7 +279,7 @@ public class FileShare extends javax.swing.JFrame {
         });
     }
 
-    private void crearClaves() throws NoSuchAlgorithmException, IOException {
+    public void crearClaves() throws NoSuchAlgorithmException, IOException {
         KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA"); //Crea la instancia del generador de keys y lo configura para que use RSA
         keygen.initialize(1024); //Inicializa el generador en 1024 bits
         KeyPair keypair = keygen.generateKeyPair(); //genera las keys
@@ -301,11 +287,18 @@ public class FileShare extends javax.swing.JFrame {
         PrivKey = keypair.getPrivate(); //Obtiene la key privada
         PubKey = keypair.getPublic(); //Obtiene la Key publica
 
+        System.out.println(PrivKey.getFormat());
+
         JOptionPane.showMessageDialog(null, "LLaves generadas");
+
+        JOptionPane.showMessageDialog(null, "seleccione la ruta de la llave publica");
+        this.GuardarLlave(PubKey);
+        JOptionPane.showMessageDialog(null, "seleccione la ruta de la llave privada");
+        this.GuardarLlave(PrivKey);
     }
 
-    private void GuardarLlavePrivada() {
-        if (PrivKey != null) {
+    public void GuardarLlave(Key Key) {
+        if (Key != null) {
             // Inicializa el Filechooser
             JFileChooser chooser = new JFileChooser();
             int retval = chooser.showSaveDialog(null);
@@ -320,9 +313,9 @@ public class FileShare extends javax.swing.JFrame {
                     file = new File(file.getParentFile(), file.getName() + ".pem");
                 }
                 try {
-                    //Escribe la clave privada en un archivo .PEM, este se guarda en el directorio del proyecto
+                    //Escribe la clave privada en un archivo .PEM
                     JcaPEMWriter writer = new JcaPEMWriter(new FileWriter(file));
-                    writer.writeObject(PrivKey);
+                    writer.writeObject(Key);
                     writer.close();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -333,68 +326,134 @@ public class FileShare extends javax.swing.JFrame {
         }
     }
 
-    private void GuardarLlavePublica() {
-        if (PubKey != null) {
-            // Inicializa el Filechooser
-            JFileChooser chooser = new JFileChooser();
-            int retval = chooser.showSaveDialog(null);
-            if (retval == JFileChooser.APPROVE_OPTION) {
-                File file = chooser.getSelectedFile();
-                //en caso de no poner nombre se devuelve
-                if (file == null) {
-                    return;
-                }
-                // pone extension automaticamente
-                if (!file.getName().toLowerCase().endsWith(".pem")) {
-                    file = new File(file.getParentFile(), file.getName() + ".pem");
-                }
-                try {
-                    //Escribe la clave publica en un archivo .PEM
-                    JcaPEMWriter writer = new JcaPEMWriter(new FileWriter(file));
-                    writer.writeObject(PubKey);
-                    writer.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        } else {
-            JOptionPane.showMessageDialog(null, "No ha generado un par de llaves");
-        }
-    }
+    /*private PublicKey leerllaveprivada() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        FileInputStream in = new FileInputStream("mykey.pem.pub");
+        byte[] keyBytes = new byte[in.available()];
+        in.read(keyBytes);
+        in.close();
 
-    private void leerllaveprivada() {
-        
-        String privateKeyPEM = key;
-        privateKeyPEM = privateKeyPEM.replace("-----BEGIN PRIVATE KEY-----\n", "");
-        privateKeyPEM = privateKeyPEM.replace("-----END PRIVATE KEY-----", "");
-        byte[] encoded = Base64.decodeBase64(privateKeyPEM);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
-        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
-        RSAPrivateKey privKey = (RSAPrivateKey) kf.generatePrivate(keySpec);
-        return privKey;
+        String pubKey = new String(keyBytes, "UTF-8");
+        pubKey = pubKey.replaceAll("(-+BEGIN PUBLIC KEY-+\\r?\\n|-+END PUBLIC KEY-+\\r?\\n?)", "");
+
+        BASE64Decoder decoder = new BASE64Decoder();
+        keyBytes = decoder.decodeBuffer(pubKey);
+
+        // generate public key
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        PublicKey publicKey = keyFactory.generatePublic(spec);
+
+        return publicKey;
+    }*/
+    public Key leerllave(File file, String type) throws Exception {
+        if (type.equals("public")) {
+            FileInputStream in = new FileInputStream(file);
+            byte[] keyBytes = new byte[in.available()];
+            in.read(keyBytes);
+            in.close();
+
+            String pubKey = new String(keyBytes, "UTF-8");
+            pubKey = pubKey.replaceAll("(-+BEGIN PUBLIC KEY-+\\r?\\n|-+END PUBLIC KEY-+\\r?\\n?)", "");
+
+            BASE64Decoder decoder = new BASE64Decoder();
+            keyBytes = decoder.decodeBuffer(pubKey);
+
+            X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            return keyFactory.generatePublic(spec);
+
+        } else if (type.equals("private")) {
+            java.security.Security.addProvider(
+                    new org.bouncycastle.jce.provider.BouncyCastleProvider()
+            );
+            FileInputStream in = new FileInputStream(file);
+            byte[] keyBytes = new byte[in.available()];
+            in.read(keyBytes);
+            in.close();
+
+            String privateKey = new String(keyBytes, "UTF-8");
+            privateKey = privateKey.replaceAll("(-+BEGIN RSA PRIVATE KEY-+\\r?\\n|-+END RSA PRIVATE KEY-+\\r?\\n?)", "");
+
+            BASE64Decoder decoder = new BASE64Decoder();
+            keyBytes = decoder.decodeBuffer(privateKey);
+
+            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            return keyFactory.generatePrivate(spec);
+
+        } else {
+            return null;
+        }
     }
 
     public void cifrarArchivo(File data) throws IOException {
+        if (PubKey != null && data!=null) {
+            byte[] datosACifrar = Files.readAllBytes(data.toPath());
+            byte[] datosEncriptados = null;
+            try {
+                Cipher cipher = Cipher.getInstance("RSA");
+                cipher.init(Cipher.ENCRYPT_MODE, PubKey);
+                datosEncriptados = cipher.doFinal(datosACifrar);
+                System.out.println("Los datos ya encriptados son:  " + datosEncriptados);
 
-        System.out.println("Datos a encriptar (Deberia ser archivo y no string) " + data);
-        byte[] datosACifrar = Files.readAllBytes(data);
-        byte[] datosEncriptados = null;
-        try {
-            PublicKey llavePub = leerArchivoLlavePublica(this.Archivo_Llave_Publica);
-            Cipher cipher = Cipher.getInstance("RSA");
-            cipher.init(Cipher.ENCRYPT_MODE, PubKeyread);
-            datosEncriptados = cipher.doFinal(datosACifrar);
-            System.out.println("Los datos ya encriptados son:  " + datosEncriptados);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
-            e.printStackTrace();
+            JFileChooser chooser = new JFileChooser();
+            int retval = chooser.showSaveDialog(null);
+            if (retval == JFileChooser.APPROVE_OPTION) {
+                File file = chooser.getSelectedFile();
+                //en caso de no poner nombre se devuelve
+                if (file == null) {
+                    return;
+                }
+                try {
+                    OutputStream os = new FileOutputStream(file);
+                    os.write(datosEncriptados);
+                    os.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "No ha cargado ninguna clave o archivo");
         }
-        return datosEncriptados;
-
     }
 
-    public void descifrarArchivo() {
+    public void descifrarArchivo(File data) throws IOException {
+        if (PrivKey != null && data!=null) {
+            byte[] datosADescifrar = Files.readAllBytes(data.toPath());
+            byte[] datosDescifrados = null;
 
+            try {
+                Cipher cipher = Cipher.getInstance("RSA");
+                cipher.init(Cipher.DECRYPT_MODE, PrivKey);
+                datosDescifrados = cipher.doFinal(datosADescifrar);
+                System.out.println("Los datos descifrados son: " + new String(datosDescifrados));
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            JFileChooser chooser = new JFileChooser();
+            int retval = chooser.showSaveDialog(null);
+            if (retval == JFileChooser.APPROVE_OPTION) {
+                File file = chooser.getSelectedFile();
+                //en caso de no poner nombre se devuelve
+                if (file == null) {
+                    return;
+                }
+                try {
+                    OutputStream os = new FileOutputStream(file);
+                    os.write(datosDescifrados);
+                    os.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "No ha cargado ninguna clave o archivo");
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -404,15 +463,13 @@ public class FileShare extends javax.swing.JFrame {
     private javax.swing.JButton btn_genKeys;
     private javax.swing.JButton btn_loadPrivKey;
     private javax.swing.JButton btn_loadPubKey;
-    private javax.swing.JButton btn_saveprivKey;
-    private javax.swing.JButton btn_savepubKeys;
+    private javax.swing.JButton btn_readfile;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JLabel lbl_loadedFile;
     private javax.swing.JLabel lbl_routefile;
     private javax.swing.JLabel lbl_routeprivkey;
     private javax.swing.JLabel lbl_routepubkey;
