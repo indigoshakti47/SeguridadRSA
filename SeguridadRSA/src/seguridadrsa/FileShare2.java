@@ -142,9 +142,6 @@ public class FileShare2 {
         } catch(IOException| NoSuchAlgorithmException|NoSuchPaddingException|InvalidKeyException| BadPaddingException |IllegalBlockSizeException e){
             e.printStackTrace();
         }
-
-
-
     }
 
     public PrivateKey leerArchivoLlavePrivada(String nombreArchivo) throws IOException{
