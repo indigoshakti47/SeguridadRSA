@@ -21,6 +21,10 @@ import sun.misc.BASE64Decoder;
 
 public class FileShare extends javax.swing.JFrame {
 
+    /**
+     * Represents the idea of how communication software works It uses public
+     * key infrastructure and RSA to its implementation
+     */
     public FileShare() {
         initComponents();
         this.setLocationRelativeTo(null);
@@ -200,11 +204,21 @@ public class FileShare extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
+    /**
+     * ends the app
+     *
+     * @param evt respective button clicked
+     */
     private void btn_exitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_exitActionPerformed
         System.exit(0);
     }//GEN-LAST:event_btn_exitActionPerformed
-
+    /**
+     * button action that asks the user to select a public key .PEM file, calls
+     * "leerllave" method and stores its return in the corresponding global
+     * variable
+     *
+     * @param evt respective button clicked
+     */
     private void btn_loadPubKeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_loadPubKeyActionPerformed
         try {
             JFileChooser chooser = new JFileChooser();
@@ -218,7 +232,13 @@ public class FileShare extends javax.swing.JFrame {
             Logger.getLogger(FileShare.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_btn_loadPubKeyActionPerformed
-
+    /**
+     * button action that asks the user to select a private key .PEM file, calls
+     * "leerllave" method and stores its return in the corresponding global
+     * variable
+     *
+     * @param evt respective button clicked
+     */
     private void btn_loadPrivKeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_loadPrivKeyActionPerformed
         try {
             JFileChooser chooser = new JFileChooser();
@@ -232,14 +252,22 @@ public class FileShare extends javax.swing.JFrame {
             Logger.getLogger(FileShare.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_btn_loadPrivKeyActionPerformed
-
+    /**
+     * button action that asks the user to select a file
+     * and stores it corresponding global variable
+     * @param evt respective button clicked
+     */
     private void btn_readfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_readfileActionPerformed
         JFileChooser chooser = new JFileChooser();
         chooser.showOpenDialog(this);
         readFile = chooser.getSelectedFile();
         this.lbl_loadedFile.setText(readFile.getName());
     }//GEN-LAST:event_btn_readfileActionPerformed
-
+    /**
+     * button action calls "cifrarArchivo" method with the global file 
+     * variable and the global plublic key variable as parameters
+     * @param evt respective button clicked
+     */
     private void btn_ciphActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_ciphActionPerformed
         try {
             this.cifrarArchivo(readFile, PubKey);
@@ -247,7 +275,11 @@ public class FileShare extends javax.swing.JFrame {
             Logger.getLogger(FileShare.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_btn_ciphActionPerformed
-
+    /**
+     * button action calls "descifrarArchivo" method with the global file 
+     * variable and the global private key variable as parameters
+     * @param evt respective button clicked
+     */
     private void btn_desciphActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_desciphActionPerformed
         try {
             this.descifrarArchivo(readFile, PrivKey);
@@ -255,7 +287,11 @@ public class FileShare extends javax.swing.JFrame {
             Logger.getLogger(FileShare.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_btn_desciphActionPerformed
-
+    /**
+     * button action calls "crearClaves" method that creates the pair 
+     * of keys and stores them in their respectives global variables
+     * @param evt respective button clicked
+     */
     private void btn_genKeysActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_genKeysActionPerformed
         try {
             this.crearClaves();
@@ -266,10 +302,24 @@ public class FileShare extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btn_genKeysActionPerformed
 
+    /**
+     * it stores a private key for decryption
+     */
     PrivateKey PrivKey;
+    /**
+     * it stores a public key for encryption
+     */
     PublicKey PubKey;
+    /**
+     * it stores the file that is going to be encrypted or decrypted
+     */
     File readFile;
 
+    /**
+     * initializes the visual components
+     *
+     * @param args
+     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -278,6 +328,13 @@ public class FileShare extends javax.swing.JFrame {
         });
     }
 
+    /**
+     * Creates a pair of keys, public and private and asks the user the storage
+     * location for the corresponding .PEM files
+     *
+     * @throws NoSuchAlgorithmException
+     * @throws IOException
+     */
     public void crearClaves() throws NoSuchAlgorithmException, IOException {
         KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA"); //Crea la instancia del generador de keys y lo configura para que use RSA
         keygen.initialize(1024); //Inicializa el generador en 1024 bits
@@ -286,16 +343,23 @@ public class FileShare extends javax.swing.JFrame {
         PrivKey = keypair.getPrivate(); //Obtiene la key privada
         PubKey = keypair.getPublic(); //Obtiene la Key publica
 
-        System.out.println(PrivKey.getFormat());
-
         JOptionPane.showMessageDialog(null, "LLaves generadas");
 
+        // guarda la llave publica
         JOptionPane.showMessageDialog(null, "seleccione la ruta de la llave publica");
         this.GuardarLlave(PubKey);
+        
+        // guarda la llave privada
         JOptionPane.showMessageDialog(null, "seleccione la ruta de la llave privada");
         this.GuardarLlave(PrivKey);
     }
 
+    /**
+     * asks the user the storage location for a key .PEM files
+     *
+     * @param Key corresponds to the key that is going to be storaged, could be
+     * both private or public key
+     */
     public void GuardarLlave(Key Key) {
         if (Key != null) {
             // Inicializa el Filechooser
@@ -312,7 +376,7 @@ public class FileShare extends javax.swing.JFrame {
                     file = new File(file.getParentFile(), file.getName() + ".pem");
                 }
                 try {
-                    //Escribe la clave privada en un archivo .PEM
+                    //Escribe la llave en un archivo .PEM
                     JcaPEMWriter writer = new JcaPEMWriter(new FileWriter(file));
                     writer.writeObject(Key);
                     writer.close();
@@ -325,38 +389,71 @@ public class FileShare extends javax.swing.JFrame {
         }
     }
 
+    /**
+     * Reads a .PEM file and extracts the respective key. returns null if type
+     * parameter is not inserted properly
+     *
+     * @param file corresponds to the key .PEM file
+     * @param type corresponds to the type of key residing in the .PEM file.
+     * "public" and "private" if the key is public or private respectively
+     * @return returns the corresponding key stored in the .PEM file. returns
+     * null if type parameter is not inserted properly
+     * @throws Exception
+     */
     public Key leerllave(File file, String type) throws Exception {
+        
+        // metodo para llaves publicas
         if (type.equals("public")) {
+            
+            // lee el archivo y lo ingresa en un array de bytes
             FileInputStream in = new FileInputStream(file);
             byte[] keyBytes = new byte[in.available()];
             in.read(keyBytes);
             in.close();
-
+            
+            //pone su contenido en un string eliminando los headers
             String pubKey = new String(keyBytes, "UTF-8");
             pubKey = pubKey.replaceAll("(-+BEGIN PUBLIC KEY-+\\r?\\n|-+END PUBLIC KEY-+\\r?\\n?)", "");
 
+            // lo convierte a base 64
             BASE64Decoder decoder = new BASE64Decoder();
             keyBytes = decoder.decodeBuffer(pubKey);
-
+            
+            //le pone su respectivo formato y lo retorna
             X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             return keyFactory.generatePublic(spec);
 
+            //metodo para llaves privadas
         } else if (type.equals("private")) {
+            
+            /* para ser sincero, no se que hace exactamente la siguiente linea.
+            Esta linea la encontré despues de buscar en internet un error de formato
+            que me arrojaba netbeans, que no tenía sentido porque el formato de la llave privada
+            es el correcto, está respuesta apareció y el que la posteó no dió más información
+            más que el hecho de que poniendo la linea su programa empezaba a detectar bien el formato.
+            En mi programa ocurrió lo mismo pero sigo sin saber porqué arrojaba el error en primer
+            lugar, o bien, la razón detrasde que la siguiente linea arregla el error*/
+            
             java.security.Security.addProvider(
                     new org.bouncycastle.jce.provider.BouncyCastleProvider()
             );
+            
+            // lee el archivo y lo ingresa en un array de bytes
             FileInputStream in = new FileInputStream(file);
             byte[] keyBytes = new byte[in.available()];
             in.read(keyBytes);
             in.close();
 
+            //pone su contenido en un string eliminando los headers
             String privateKey = new String(keyBytes, "UTF-8");
             privateKey = privateKey.replaceAll("(-+BEGIN RSA PRIVATE KEY-+\\r?\\n|-+END RSA PRIVATE KEY-+\\r?\\n?)", "");
 
+            // lo convierte a base 64
             BASE64Decoder decoder = new BASE64Decoder();
             keyBytes = decoder.decodeBuffer(privateKey);
-
+            
+            //le pone su respectivo formato y lo retorna
             PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             return keyFactory.generatePrivate(spec);
@@ -366,11 +463,24 @@ public class FileShare extends javax.swing.JFrame {
         }
     }
 
+    /**
+     * Encrypts the file provided with the key provided and asks the user for
+     * the storage location of the encrypted file
+     *
+     * @param data corresponds to the file thas is going to be encrypted
+     * @param key corresponds to the public key that is going to encrypt the
+     * file
+     * @throws IOException
+     */
     public void cifrarArchivo(File data, PublicKey key) throws IOException {
-        if (key != null && data!=null) {
+        // verifica que se haya cargado el archivo y la llave correspondiente
+        if (key != null && data != null) {
+            
+            //lee los datos del archivo
             byte[] datosACifrar = Files.readAllBytes(data.toPath());
             byte[] datosEncriptados = null;
             try {
+                //cifra el archivo con RSA y la llave publica correspondiente
                 Cipher cipher = Cipher.getInstance("RSA");
                 cipher.init(Cipher.ENCRYPT_MODE, key);
                 datosEncriptados = cipher.doFinal(datosACifrar);
@@ -379,7 +489,8 @@ public class FileShare extends javax.swing.JFrame {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
+            
+            // se pide al usuario que escoja donde se guardara el archivo cifrado
             JFileChooser chooser = new JFileChooser();
             int retval = chooser.showSaveDialog(null);
             if (retval == JFileChooser.APPROVE_OPTION) {
@@ -401,11 +512,24 @@ public class FileShare extends javax.swing.JFrame {
         }
     }
 
+    /**
+     * decrypts an encrypted file with a private key asks the user for the
+     * storage location of the decrypted file
+     *
+     * @param data corresponds to the file thas is going to be decrypted
+     * @param key corresponds to the private key that is going to decrypt the
+     * file
+     * @throws IOException
+     */
     public void descifrarArchivo(File data, PrivateKey key) throws IOException {
-        if (key != null && data!=null) {
+        // verifica que se haya cargado el archivo y la llave correspondiente
+        if (key != null && data != null) {
+            
+            //lee los datos del archivo
             byte[] datosADescifrar = Files.readAllBytes(data.toPath());
             byte[] datosDescifrados = null;
-
+            
+            //descifra el archivo con RSA y la llave privada correspondiente
             try {
                 Cipher cipher = Cipher.getInstance("RSA");
                 cipher.init(Cipher.DECRYPT_MODE, key);
@@ -415,6 +539,8 @@ public class FileShare extends javax.swing.JFrame {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            
+            // se pide al usuario que escoja donde se guardara el archivo descifrado
             JFileChooser chooser = new JFileChooser();
             int retval = chooser.showSaveDialog(null);
             if (retval == JFileChooser.APPROVE_OPTION) {
