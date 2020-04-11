@@ -28,6 +28,9 @@ public class FileShare extends javax.swing.JFrame {
     public FileShare() {
         initComponents();
         this.setLocationRelativeTo(null);
+        this.lbl_loadedFile.setText("");
+        this.lbl_routeprivkey.setText("");
+        this.lbl_routepubkey.setText("");
     }
 
     @SuppressWarnings("unchecked")
