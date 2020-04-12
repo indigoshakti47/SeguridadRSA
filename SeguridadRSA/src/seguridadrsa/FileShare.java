@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import javax.crypto.Cipher;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+// esta librería de java no es soportada en el JDK 9
 import sun.misc.BASE64Decoder;
 
 public class FileShare extends javax.swing.JFrame {
@@ -436,7 +437,7 @@ public class FileShare extends javax.swing.JFrame {
             es el correcto, está respuesta apareció y el que la posteó no dió más información
             más que el hecho de que poniendo la linea su programa empezaba a detectar bien el formato.
             En mi programa ocurrió lo mismo pero sigo sin saber porqué arrojaba el error en primer
-            lugar, o bien, la razón detrasde que la siguiente linea arregla el error*/
+            lugar, o bien, la razón detras de que la siguiente linea arregla el error*/
             
             java.security.Security.addProvider(
                     new org.bouncycastle.jce.provider.BouncyCastleProvider()
