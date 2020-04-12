@@ -356,7 +356,10 @@ public class FileShare extends javax.swing.JFrame {
             Logger.getLogger(FileShare.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_btn_genKeysActionPerformed
-
+    /**
+     * button action calls the socket method "Client" in order to recieve a file from another instance of the program
+     * @param evt 
+     */
     private void btn_escucharActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_escucharActionPerformed
         try {
             socket.Client();
@@ -364,7 +367,10 @@ public class FileShare extends javax.swing.JFrame {
             Logger.getLogger(FileShare.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_btn_escucharActionPerformed
-
+    /**
+     * button action calls the socket method "Server" in order to send a file to another instance of the program
+     * @param evt 
+     */
     private void btn_enviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_enviarActionPerformed
         try {
             socket.Server(this.txtfld_ip.getText());
@@ -385,7 +391,9 @@ public class FileShare extends javax.swing.JFrame {
      * it stores the file that is going to be encrypted or decrypted
      */
     File readFile;
-    
+    /**
+     * it stores the class with the role to establish connection between two instances of the program
+     */
     WebSocket socket;
 
     /**
