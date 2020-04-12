@@ -512,13 +512,7 @@ public class FileShare extends javax.swing.JFrame {
             //metodo para llaves privadas
         } else if (type.equals("private")) {
             
-            /* para ser sincero, no se que hace exactamente la siguiente linea.
-            Esta linea la encontré despues de buscar en internet un error de formato
-            que me arrojaba netbeans, que no tenía sentido porque el formato de la llave privada
-            es el correcto, está respuesta apareció y el que la posteó no dió más información
-            más que el hecho de que poniendo la linea su programa empezaba a detectar bien el formato.
-            En mi programa ocurrió lo mismo pero sigo sin saber porqué arrojaba el error en primer
-            lugar, o bien, la razón detras de que la siguiente linea arregla el error*/
+            /* Arregla error */
             
             java.security.Security.addProvider(
                     new org.bouncycastle.jce.provider.BouncyCastleProvider()
