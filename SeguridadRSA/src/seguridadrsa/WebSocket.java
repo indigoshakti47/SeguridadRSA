@@ -13,12 +13,26 @@ import javax.swing.JFileChooser;
 
 public class WebSocket {
 
+    /**
+     * Stores the main class where the graphic interface is being executed
+     */
     FileShare main;
-
+    /**
+     * Class that establish a connection between two instances of the same program
+     * @param main 
+     * @throws IOException 
+     */
     public WebSocket(FileShare main) throws IOException {
         this.main = main;
     }
 
+    /**
+     * Creates a connection between two instances of a this program, and sends a file chosen by the user.
+     * this should be called after the second instance is succesfully waiting for the file.
+     * the used port to communicate is 3000
+     * @param ip it corresponds to the IP direction of the destiny
+     * @throws IOException 
+     */
     public void Server(String ip) throws IOException {
 
         Socket socket = new Socket(ip, 3000);
@@ -41,6 +55,11 @@ public class WebSocket {
 
     }
 
+    /**
+     * Makes the program to listen for an incomming connection to recieve a file and asks the user where to store it.
+     * the used port is 3000
+     * @throws IOException 
+     */
     public void Client() throws IOException {
 
         int filesize = 1022386;
